@@ -1,82 +1,59 @@
 import 'dart:convert';
-
-import 'package:applicaiton/screen/Map.dart';
-import 'package:applicaiton/screen/TakePhoto.dart';
-import 'package:applicaiton/screen/TravelList.dart';
-import 'package:applicaiton/screen/dream.dart';
+import 'package:applicaiton/api_config.dart' as configURL;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'Map.dart';
+import 'TravelList.dart';
+
 class TravelDetailScreen extends StatefulWidget {
+  final String id;
+
+  const TravelDetailScreen({Key? key, required this.id}) : super(key: key);
+
   @override
   _TravelDetailScreenState createState() => _TravelDetailScreenState();
 }
 
 class _TravelDetailScreenState extends State<TravelDetailScreen> {
-  List<String> location = [];
-  List<String> address1 = [];
-  List<String> invoice = [];
-  List<String> images = [];
-
-  final List<String> location2 = [
-    "สถานที่ 1: Big C",
-    "สถานที่ 2: Lotus's",
-  ];
-  final List<String> address2 = [
-    "ที่อยู่ 90/041 ตำบลบ้านหลวง อำเภอจอมทอง จังหวัดเชียงใหม่ 50160",
-    "ที่อยู่ 80/121 ตำบลแม่เมาะ อำเภอแม่เมาะ จังหวัดเชียงใหม่ 50160",
-  ];
-
-  final List<String> invoice2 = [
-    "INV10000100000001",
-    "INV10000100000002",
-  ];
-  final List<String> images2 = [
-    "http://teamproject.ddns.net/application/assets/images/BigC.jpg",
-    "http://teamproject.ddns.net/application/assets/images/Lotus.jpg",
-  ];
-
-  // Fetch data from API
-  Future<void> fetchData() async {
-    final response = await http.get(Uri.parse(
-        'http://teamproject.ddns.net/application/api/trip_detail.php'));
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        location = List<String>.from(data['location']);
-        address1 = List<String>.from(data['address1']);
-        invoice = List<String>.from(data['invoice']);
-        images = List<String>.from(data['images']);
-      });
-    } else {
-      throw Exception('Failed to load data');
-    }
-  }
+  late Future<Map<String, dynamic>> _tripDetailFuture;
 
   @override
   void initState() {
     super.initState();
-    fetchData();
+    _tripDetailFuture = fetchTripDetail(widget.id);
+  }
+
+  Future<Map<String, dynamic>> fetchTripDetail(String tripId) async {
+    final apiUrl = '${configURL.apiUrl}/trip_detail.php?id=$tripId';
+    final response = await http.get(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print('Received data from API: $data');
+      return data[0]; // Assuming your API returns a single trip detail object
+    } else {
+      throw Exception(
+          'Failed to load trip detail. Status code: ${response.statusCode}');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, //Color(0xFF17203A),
-      resizeToAvoidBottomInset: false,
-      extendBody: true,
+      backgroundColor: Colors.black,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white, size: 30),
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => TravelListScreen()),
+              MaterialPageRoute(builder: (context) => const TravelListScreen()),
             );
           },
         ),
         centerTitle: true,
-        title: Text(
+        title: const Text(
           "รายละเอียดการเดินทาง",
           style: TextStyle(
             fontSize: 20,
@@ -84,377 +61,257 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.black, //Color(0xFF17203A),
+        backgroundColor: Colors.black,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).padding.bottom +
-                95, //เพิ่มขึ้นที่ด้านล่างเวลาเลื่อนขึ้น ไม่ให้ข้อมูลทับซ้อนกับ Bar ล่าง
-          ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _tripDetailFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            final tripDetail = snapshot.data!;
+            return ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                const SizedBox(height: 10),
+                _buildHeader(),
+                _buildDriverInfo(tripDetail['car']),
+                _buildMapButton(),
+                _buildTripDetails(tripDetail['trip_detail']),
+              ],
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+        child: Container(
+          width: double.infinity,
+          height: 40,
+          color: const Color(0xff0A8ED9),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "ข้อมูลพนักงาน",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 19,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: Container(
-                    width: double.infinity,
-                    height: 40,
-                    color: Color(0xff0A8ED9),
+                ),
+                Icon(
+                  Icons.local_shipping,
+                  color: Colors.white,
+                  size: 30,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDriverInfo(List<dynamic> drivers) {
+    return Column(
+      children: drivers.map<Widget>((driver) {
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Container(
+              width: double.infinity,
+              height: 140,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                border: Border.all(
+                  color: const Color(0xFF0D99FF),
+                  width: 3,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Expanded(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.all(9),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
-                            "ข้อมูลพนักงาน",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 19,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Icon(
-                            Icons.local_shipping,
-                            color: Colors.white,
-                            size: 30,
-                          ),
+                          // _buildDriverImage(driver['driver']['picture'].toString()),
+                          _buildDriverImage(
+                              "${configURL.apiUrl}/Avatar.jpg".toString()),
+                          const SizedBox(width: 5),
+                          _buildDriverDetails(driver),
                         ],
                       ),
                     ),
                   ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildDriverImage(String? imageUrl) {
+    if (imageUrl == null) {
+      return Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.white, width: 2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8.0),
+          child: Image.network(
+            ("${configURL.apiUrl}/Avatar.jpg"),
+            height: 80,
+            width: 80,
+          ),
+        ),
+      ); // or any other widget you want to show when imageUrl is null
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white, width: 2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8.0),
+        child: Image.network(
+          "${configURL.apiUrl}/Avatar.jpg",
+          height: 80,
+          width: 80,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDriverDetails(Map<String, dynamic>? driver) {
+    if (driver == null) {
+      return Container(); // or any other widget you want to show when driver is null
+    }
+
+    return Expanded(
+      child: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "ทะเบียนรถ: ${driver['license'] ?? 'N/A'}",
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+              ),
+            ),
+            Text(
+              "คนขับรถ: ${driver['driver']['firstname'] ?? 'N/A'} ${driver['driver']['surname'] ?? 'N/A'}",
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+              ),
+            ),
+            Text(
+              "หมายเลขโทรศัพท์: ${driver['driver']['telephone'] ?? 'N/A'}",
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMapButton() {
+    return Padding(
+        padding: const EdgeInsets.only(top: 20, right: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Container(
+              height: 40,
+              width: 120,
+              decoration: const BoxDecoration(
+                color: Color(0xFF0A8ED9),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Container(
-                  width: double.infinity,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    color: Color.fromRGBO(
-                        0, 21, 29, 37), //Color.fromRGBO(0, 14, 19, 26),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(20),
-                      bottomRight: Radius.circular(20),
-                    ),
-                    border: Border.all(
-                      color: Color(0xFF0D99FF),
-                      width: 3,
-                    ),
-                  ),
-                  child: Column(
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MapScreen()),
+                  );
+                },
+                child: const Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(9),
-                          child: Flexible(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color: Colors.white, width: 2),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: Image.network(
-                                      ("http://teamproject.ddns.net/application/assets/images/Avatar.jpg"),
-                                      height: 80,
-                                      width: 80,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 5),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 7, vertical: 15),
-                                  child: Expanded(
-                                    child: Center(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "ทะเบียนรถ: ตก7587",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                          Text(
-                                            "คนขับรถ: นายวิเชียร์ พลไทย",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                          Text(
-                                            "หมายเลขโทรศัพท์: 0985248562",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                      Icon(Icons.map, color: Colors.white, size: 20),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                        "เส้นทาง",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 19,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 20, right: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Container(
-                      height: 40,
-                      width: 120,
-                      decoration: BoxDecoration(
-                        color: Color(0xff0A8ED9),
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(10),
-                        ),
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MapScreen(),
-                            ),
-                          );
-                        },
-                        child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.map, color: Colors.white, size: 20),
-                              SizedBox(
-                                width: 5,
-                              ),
-                              Text(
-                                "เส้นทาง",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: location.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Color.fromRGBO(0, 21, 29, 37),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Color(0xFF0D99FF),
-                          width: 3,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(height: 0),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 50,
-                            ),
-                            child: Image.network(
-                              images[index],
-                              height: 200,
-                              width: 250,
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                            ),
-                            child: Text(
-                              location[index],
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 19,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 25),
-                            child: Text(
-                              address1[index],
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Text(
-                              "รายการสินค้า",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 19,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 25),
-                            child: Text(
-                              invoice[index],
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                right: 2, top: 10, bottom: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Container(
-                                  height: 40,
-                                  padding: EdgeInsets.symmetric(horizontal: 9),
-                                  margin: EdgeInsets.only(right: 10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(10),
-                                    ),
-                                  ),
-                                  child: InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const TakePhotoScreen(),
-                                        ),
-                                      );
-                                    },
-                                    child: Center(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.camera_alt,
-                                              color: Colors.white, size: 20),
-                                          SizedBox(
-                                            width: 5,
-                                          ),
-                                          Text(
-                                            "ยืนยันการส่งสินค้า",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  height: 40,
-                                  width: 60,
-                                  margin: EdgeInsets.only(right: 10),
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff0A8ED9),
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(10),
-                                    ),
-                                  ),
-                                  child: InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              ProductListScreen(),
-                                        ),
-                                      );
-                                    },
-                                    child: Center(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.visibility,
-                                              color: Colors.white, size: 20),
-                                          SizedBox(
-                                            width: 5,
-                                          ),
-                                          Text(
-                                            "ดู",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 19,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
+            )
+          ],
+        ));
+  }
+
+  Widget _buildTripDetails(Map<String, dynamic> tripDetails) {
+    if (tripDetails == null || tripDetails.isEmpty) {
+      return Center(
+          child: Text('No data available')); // or any other placeholder widget
+    }
+
+    return Column(
+      children: tripDetails.entries.map<Widget>((entry) {
+        final shop = entry.value['shop'];
+        if (shop == null) {
+          return Container(); // or any other placeholder widget
+        }
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 8.0),
+          child: ListTile(
+            title: Text('Shop: ${shop['name'] ?? 'N/A'}'),
+            subtitle: Text('Address: ${shop['address'] ?? 'N/A'}'),
+            trailing: Text('Status: ${entry.value['status_check'] ?? 'N/A'}'),
           ),
-        ),
-      ),
+        );
+      }).toList(),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:applicaiton/api_config.dart' as configURL;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -30,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _getSystemName() async {
     // Fetch data from intro.php
     Uri url =
-        Uri.parse('http://teamproject.ddns.net/application/api/intro.php');
+        Uri.parse('${configURL.deployApiUrl}/intro.php');
 
     try {
       var response = await http.get(url);
@@ -57,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // Your authentication logic here
     Uri url =
-        Uri.parse('http://teamproject.ddns.net/application/api/login.php');
+        Uri.parse('${configURL.deployApiUrl}/login.php');
 
     try {
       var response = await http.post(
@@ -67,8 +68,10 @@ class _LoginScreenState extends State<LoginScreen> {
           'Authorization': 'Bearer API@Application1234!',
         },
         body: {
-          'username': phoneNumber,
-          'password': password,
+          // 'username': phoneNumber,
+          // 'password': password,
+          'username': '0640986563',
+          'password': '25042544',
         },
       );
 

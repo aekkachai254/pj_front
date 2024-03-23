@@ -13,9 +13,9 @@ class VerifyScreen extends StatelessWidget {
 
   PreferredSizeWidget appBar(BuildContext context) {
     return AppBar(
-      backgroundColor: Color(0xFF17203A),
+      backgroundColor: const Color(0xFF17203A),
       centerTitle: true,
-      title: Text(
+      title: const Text(
         'รายการสินค้า',
         style: TextStyle(
             fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
@@ -27,7 +27,7 @@ class VerifyScreen extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) {
-                return TravelDetailScreen();
+                return const TravelDetailScreen(id: '1');
               },
             ),
           );
@@ -35,24 +35,24 @@ class VerifyScreen extends StatelessWidget {
       ),
       actions: [
         IconButton(
-          icon: Icon(Icons.file_present_outlined, color: Colors.white),
+          icon: const Icon(Icons.file_present_outlined, color: Colors.white),
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => PurchaseOrder()),
+              MaterialPageRoute(builder: (context) => const PurchaseOrder()),
             );
           },
           iconSize: 30,
         ),
-        SizedBox(
+        const SizedBox(
           width: 2,
         ),
         IconButton(
-          icon: Icon(Icons.crop_free_sharp, color: Colors.white),
+          icon: const Icon(Icons.crop_free_sharp, color: Colors.white),
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ScanScreen()),
+              MaterialPageRoute(builder: (context) => const ScanScreen()),
             );
           },
           iconSize: 30,
@@ -63,13 +63,13 @@ class VerifyScreen extends StatelessWidget {
 
   Widget listviewHeading() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 15, vertical: 7),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
+      decoration: const BoxDecoration(
         color: Color.fromARGB(255, 0, 0, 0),
       ),
       child: Row(
         children: [
-          Expanded(
+          const Expanded(
             child: Text(
               'รายการ',
               style: TextStyle(
@@ -78,14 +78,14 @@ class VerifyScreen extends StatelessWidget {
                   color: Colors.white),
             ),
           ),
-          Text(
+          const Text(
             'ทั้งหมด',
             style: TextStyle(
                 fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
           ),
           Container(
-            margin: EdgeInsets.only(left: 9),
-            child: Text(
+            margin: const EdgeInsets.only(left: 9),
+            child: const Text(
               'ตรวจสอบ',
               style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -94,8 +94,8 @@ class VerifyScreen extends StatelessWidget {
             ),
           ),
           Container(
-            margin: EdgeInsets.only(left: 9),
-            child: Text(
+            margin: const EdgeInsets.only(left: 9),
+            child: const Text(
               'สถานะ',
               style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -129,7 +129,7 @@ class VerifyScreen extends StatelessWidget {
         child: Column(
           children: [
             listviewHeading(),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
                 itemCount: ProductList.length,
@@ -144,7 +144,7 @@ class VerifyScreen extends StatelessWidget {
                       width: double.infinity,
                       height: 60,
                       decoration: BoxDecoration(
-                        color: Color(0xFFF6F6F6),
+                        color: const Color(0xFFF6F6F6),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: ListTile(
@@ -153,31 +153,31 @@ class VerifyScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 ProductList[index]['name'],
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontWeight: FontWeight.normal,
                                   fontSize: 14,
                                   color: Colors.black,
                                 ),
                               ),
                             ),
-                            SizedBox(width: 0),
+                            const SizedBox(width: 0),
                             Text(
                               ProductList[index]['total'],
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontWeight: FontWeight.normal,
                                   fontSize: 14,
                                   color: Colors.black),
                             ),
-                            SizedBox(width: 45),
+                            const SizedBox(width: 45),
                             Text(
                               ProductList[index]['quantity'].toString(),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontWeight: FontWeight.normal,
                                 fontSize: 14,
                                 color: Colors.black,
                               ),
                             ),
-                            SizedBox(width: 45),
+                            const SizedBox(width: 45),
                             Container(
                               width: 35,
                               height: 30,
@@ -192,13 +192,13 @@ class VerifyScreen extends StatelessWidget {
                               child: (ProductList[index]['quantity'] > 0)
                                   ? (isTotalNotZero
                                       ? (isQuantityEqualShelf
-                                          ? Icon(Icons.check_circle,
+                                          ? const Icon(Icons.check_circle,
                                               color: Colors.green)
-                                          : Icon(Icons.warning,
+                                          : const Icon(Icons.warning,
                                               color: Colors.yellow))
-                                      : Icon(Icons.warning,
+                                      : const Icon(Icons.warning,
                                           color: Colors.yellow))
-                                  : SizedBox(), // Show an empty container if quantity is 0
+                                  : const SizedBox(), // Show an empty container if quantity is 0
                             ),
                           ],
                         ),

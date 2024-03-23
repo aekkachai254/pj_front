@@ -125,7 +125,7 @@ class ProductListScreen extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) {
-                  return TravelDetailScreen();
+                  return TravelDetailScreen(id: '1');
                 },
               ),
             );

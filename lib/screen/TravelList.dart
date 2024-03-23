@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:applicaiton/api_config.dart' as baseUrl;
 import 'package:applicaiton/screen/Home.dart';
 import 'package:applicaiton/screen/TravelDetail.dart';
 import 'package:flutter/material.dart';
@@ -14,32 +15,10 @@ class TravelListScreen extends StatefulWidget {
 
 class _TravelListScreenState extends State<TravelListScreen> {
   List<Map<String, dynamic>> trips = [];
-  final List<String> travelTitles = [
-    "กรุงเทพ --> เชียงใหม่",
-    "กรุงเทพ --> ภูเก็ต",
-    "กรุงเทพ --> ปัตตานี",
-    "กรุงเทพ --> บุรีรัมย์",
-    "กรุงเทพ --> นนทบุรี",
-  ];
-  final List<String> travelRegions = [
-    "วันที่: 15 มกราคม 2567",
-    "วันที่: 18 มกราคม 2567",
-    "วันที่: 18 มกราคม 2567",
-    "วันที่: 25 มกราคม 2567",
-    "วันที่: 31 มกราคม 2567",
-  ];
-  //final List<String> time = [
-  // "เวลา: 08.30 น.",
-  // "เวลา: 06.30 น.",
-  // "เวลา: 12.00 น.",
-  // "เวลา: 08.30 น.",
-  // "เวลา: 08.30 น.",
-  //];
 
   Future<void> fetchData() async {
-    final apiUrl = 'http://192.168.1.69/api/trip.php';
-
     try {
+      const apiUrl = '${baseUrl.apiUrl}/trip.php';
       final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
@@ -86,7 +65,7 @@ class _TravelListScreenState extends State<TravelListScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) {
-                          return HomeScreen();
+                          return const HomeScreen();
                         },
                       ),
                     );
@@ -108,11 +87,11 @@ class _TravelListScreenState extends State<TravelListScreen> {
                   final trip = trips[index];
                   return Card(
                     elevation: 2,
-                    margin: EdgeInsets.all(20),
-                    color: Color.fromRGBO(0, 14, 19, 26),
+                    margin: const EdgeInsets.all(20),
+                    color: const Color.fromRGBO(0, 14, 19, 26),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(
+                      side: const BorderSide(
                         color: Color(0xFF0D99FF),
                         width: 3,
                       ),
@@ -176,8 +155,8 @@ class _TravelListScreenState extends State<TravelListScreen> {
                         Padding(
                           padding: const EdgeInsets.only(right: 13, bottom: 20),
                           child: Container(
-                            padding: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
+                            padding: const EdgeInsets.all(10),
+                            decoration: const BoxDecoration(
                               color: Color(0xff0A8ED9),
                               borderRadius: BorderRadius.all(
                                 Radius.circular(5),
@@ -189,7 +168,7 @@ class _TravelListScreenState extends State<TravelListScreen> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) =>
-                                          TravelDetailScreen()),
+                                          TravelDetailScreen(id: '${trip['id']}')),
                                 );
                               },
                               child: const Center(

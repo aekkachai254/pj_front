@@ -21,7 +21,7 @@ class PurchaseOrder extends StatelessWidget {
                       width: 400,
                       height: 700,
                       decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 0, 0, 0),
+                        color: const Color.fromARGB(255, 0, 0, 0),
                         borderRadius: BorderRadius.circular(0),
                       ),
                       child: Image.asset(
@@ -43,7 +43,7 @@ class PurchaseOrder extends StatelessWidget {
     return AppBar(
       backgroundColor: Colors.black,
       centerTitle: true,
-      title: Text(
+      title: const Text(
         'ใบสั่งซื้อ',
         style: TextStyle(
             fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),

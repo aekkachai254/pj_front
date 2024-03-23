@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:applicaiton/api_config.dart' as configURL;
 import 'package:applicaiton/screen/Accident.dart';
 import 'package:applicaiton/screen/ProductList.dart';
 import 'package:applicaiton/screen/TakePhoto.dart';
@@ -42,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchUserProfile() async {
     final url = Uri.parse(
-        'http://teamproject.ddns.net/application/api/home.php?username=$username');
+        '${configURL.deployApiUrl}/home.php?username=$username');
 
     final response = await http.get(
       url,

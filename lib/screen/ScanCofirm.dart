@@ -12,7 +12,7 @@ class ScanconfirmScreen extends StatelessWidget {
     return AppBar(
       backgroundColor: Colors.black,
       centerTitle: true,
-      title: Text(
+      title: const Text(
         'รายการสินค้า',
         style: TextStyle(
             fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
@@ -24,7 +24,7 @@ class ScanconfirmScreen extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) {
-                return TravelDetailScreen();
+                return const TravelDetailScreen(id: '1',);
               },
             ),
           );
@@ -39,11 +39,11 @@ class ScanconfirmScreen extends StatelessWidget {
       ),*/
       actions: [
         IconButton(
-          icon: Icon(Icons.file_present_outlined, color: Colors.white),
+          icon: const Icon(Icons.file_present_outlined, color: Colors.white),
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => PurchaseOrder()),
+              MaterialPageRoute(builder: (context) => const PurchaseOrder()),
             );
           },
           iconSize: 30,
@@ -54,13 +54,13 @@ class ScanconfirmScreen extends StatelessWidget {
 
   Widget listviewHeading() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 15, vertical: 7),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
+      decoration: const BoxDecoration(
         color: Color.fromARGB(255, 0, 0, 0),
       ),
       child: Row(
         children: [
-          Expanded(
+          const Expanded(
             child: Text(
               'รายการ',
               style: TextStyle(
@@ -69,14 +69,14 @@ class ScanconfirmScreen extends StatelessWidget {
                   color: Colors.white),
             ),
           ),
-          Text(
+          const Text(
             'ชั้นวาง',
             style: TextStyle(
                 fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
           ),
           Container(
-            margin: EdgeInsets.only(left: 9),
-            child: Text(
+            margin: const EdgeInsets.only(left: 9),
+            child: const Text(
               'จำนวน',
               style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -85,8 +85,8 @@ class ScanconfirmScreen extends StatelessWidget {
             ),
           ),
           Container(
-            margin: EdgeInsets.only(left: 9),
-            child: Text(
+            margin: const EdgeInsets.only(left: 9),
+            child: const Text(
               'รายละเอียด',
               style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -120,7 +120,7 @@ class ScanconfirmScreen extends StatelessWidget {
         child: Column(
           children: [
             listviewHeading(),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
                 itemCount: ProductList.length,
@@ -131,7 +131,7 @@ class ScanconfirmScreen extends StatelessWidget {
                       width: double.infinity,
                       height: 60,
                       decoration: BoxDecoration(
-                        color: Color(0xFFF6F6F6),
+                        color: const Color(0xFFF6F6F6),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: ListTile(
@@ -140,41 +140,41 @@ class ScanconfirmScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 ProductList[index]['name'],
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontWeight: FontWeight.normal,
                                     fontSize: 14,
                                     color: Colors.black),
                               ),
                             ),
-                            SizedBox(width: 0),
+                            const SizedBox(width: 0),
                             Text(
                               ProductList[index]['shelf'],
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontWeight: FontWeight.normal,
                                   fontSize: 14,
                                   color: Colors.black),
                             ),
-                            SizedBox(width: 45),
+                            const SizedBox(width: 45),
                             Text(
                               ProductList[index]['quantity'].toString(),
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontWeight: FontWeight.normal,
                                   fontSize: 14,
                                   color: Colors.black),
                             ),
-                            SizedBox(width: 45),
+                            const SizedBox(width: 45),
                             Container(
                               width: 35,
                               height: 30,
                               decoration: BoxDecoration(
-                                color: Color(0xFF567BAE),
+                                color: const Color(0xFF567BAE),
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: GestureDetector(
                                 onTap: () {
                                   navigateToProductDetails(context, index);
                                 },
-                                child: Icon(
+                                child: const Icon(
                                   Icons.remove_red_eye,
                                   color: Colors.white,
                                 ),

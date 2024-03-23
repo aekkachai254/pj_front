@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:applicaiton/api_config.dart' as configURL;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -25,7 +26,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> {
   }
 
   Future<Map<String, dynamic>> fetchTripDetail(String tripId) async {
-    final apiUrl = '${configURL.apiUrl}/trip_detail.php?id=$tripId';
+    final apiUrl = '${configURL.deployApiUrl}/trip_detail.php?id=$tripId';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -70,6 +71,8 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (snapshot.data == null) {
+            return Center(child: Text('No data available'));
           } else {
             final tripDetail = snapshot.data!;
             return ListView(
@@ -126,50 +129,53 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> {
     );
   }
 
-  Widget _buildDriverInfo(List<dynamic> drivers) {
-    return Column(
-      children: drivers.map<Widget>((driver) {
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Container(
-              width: double.infinity,
-              height: 140,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-                border: Border.all(
-                  color: const Color(0xFF0D99FF),
-                  width: 3,
-                ),
-              ),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(9),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // _buildDriverImage(driver['driver']['picture'].toString()),
-                          _buildDriverImage(
-                              "${configURL.apiUrl}/Avatar.jpg".toString()),
-                          const SizedBox(width: 5),
-                          _buildDriverDetails(driver),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+  Widget _buildDriverInfo(Map<String, dynamic> car) {
+    if (car == null || car.isEmpty) {
+      return Center(child: Text('No car data available'));
+    }
+
+    return _buildDriverCard(car);
+  }
+
+  Widget _buildDriverCard(Map<String, dynamic> car) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Container(
+          width: double.infinity,
+          height: 140,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+            border: Border.all(
+              color: const Color(0xFF0D99FF),
+              width: 3,
             ),
           ),
-        );
-      }).toList(),
+          child: Column(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(9),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _buildDriverImage(
+                          "${configURL.apiUrl}/Avatar.jpg".toString()),
+                      const SizedBox(width: 5),
+                      _buildDriverDetails(car),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -207,9 +213,9 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> {
     );
   }
 
-  Widget _buildDriverDetails(Map<String, dynamic>? driver) {
-    if (driver == null) {
-      return Container(); // or any other widget you want to show when driver is null
+  Widget _buildDriverDetails(Map<String, dynamic> car) {
+    if (car == null) {
+      return Container(); // or any other widget you want to show when car is null
     }
 
     return Expanded(
@@ -218,21 +224,21 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "ทะเบียนรถ: ${driver['license'] ?? 'N/A'}",
+              "ทะเบียนรถ: ${car['license'] ?? 'N/A'}",
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 15,
               ),
             ),
             Text(
-              "คนขับรถ: ${driver['driver']['firstname'] ?? 'N/A'} ${driver['driver']['surname'] ?? 'N/A'}",
+              "คนขับรถ: ${car['driver']['firstname'] ?? 'N/A'} ${car['driver']['surname'] ?? 'N/A'}",
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 15,
               ),
             ),
             Text(
-              "หมายเลขโทรศัพท์: ${driver['driver']['telephone'] ?? 'N/A'}",
+              "หมายเลขโทรศัพท์: ${car['driver']['telephone'] ?? 'N/A'}",
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 15,
@@ -291,15 +297,14 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> {
         ));
   }
 
-  Widget _buildTripDetails(Map<String, dynamic> tripDetails) {
-    if (tripDetails == null || tripDetails.isEmpty) {
-      return Center(
-          child: Text('No data available')); // or any other placeholder widget
+  Widget _buildTripDetails(List<dynamic> tripDetailsList) {
+    if (tripDetailsList == null || tripDetailsList.isEmpty) {
+      return Center(child: Text('No trip details available'));
     }
 
     return Column(
-      children: tripDetails.entries.map<Widget>((entry) {
-        final shop = entry.value['shop'];
+      children: tripDetailsList.map<Widget>((entry) {
+        final shop = entry['shop'];
         if (shop == null) {
           return Container(); // or any other placeholder widget
         }
@@ -308,7 +313,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> {
           child: ListTile(
             title: Text('Shop: ${shop['name'] ?? 'N/A'}'),
             subtitle: Text('Address: ${shop['address'] ?? 'N/A'}'),
-            trailing: Text('Status: ${entry.value['status_check'] ?? 'N/A'}'),
+            trailing: Text('Status: ${entry['status_check'] ?? 'N/A'}'),
           ),
         );
       }).toList(),

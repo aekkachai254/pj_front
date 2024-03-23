@@ -6,113 +6,92 @@ import 'package:applicaiton/screen/TravelDetail.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-List<Map<String, dynamic>> Product = [
+List<Map<String, dynamic>> ProductList = [
   {
-    "name": " ปูไทย รสปลาหมึก",
+    "name": "1.ปูไทย รสปลาหมึก",
     "shelf": "P6",
     "total": "6",
     "quantity": 6,
-    "productCode": 0001,
+    "productCode": 1610,
     "size": "ขนาด: 55 กรัม",
     "packaging": "บรรจุ: 9 ซอง (1 ลัง)",
     "imagePath": "assets/images/Poothai.png",
-    "price": "ราคา: 10 บาท",
   },
   {
-    "name": " เลย์ รสโนริสาหร่าย",
+    "name": "2.เลย์ รสโนริสาหร่าย",
     "shelf": "L2",
     "total": "3",
     "quantity": 2,
-    "productCode": 0002,
+    "productCode": 1500,
     "size": "ขนาด: 42 กรัม",
     "packaging": "บรรจุ: 6 ซอง (1 ลัง)",
     "imagePath": "assets/images/Lay.png",
-    "price": "ราคา: 20 บาท",
   },
   {
-    "name": " มาม่าคัพ รสต้มยำกุ้ง",
+    "name": "3.มาม่าคัพ รสต้มยำกุ้ง",
     "shelf": "M5",
     "total": "5",
     "quantity": 5,
-    "productCode": 0003,
+    "productCode": 1212,
     "size": "ขนาด: 60 กรัม",
     "packaging": "บรรจุ: 36 ถ้วย (1 ลัง)",
     "imagePath": "assets/images/MamaCup.png",
-    "price": "ราคา: 20 บาท",
   },
   {
-    "name": " คัพโจ๊ก",
+    "name": "4.คัพโจ๊ก",
     "shelf": "J1",
     "total": "4",
     "quantity": 4,
-    "productCode": 0004,
+    "productCode": 1320,
     "size": "ขนาด: 35 กรัม",
     "packaging": "บรรจุ: 36 ถ้วย (1 ลัง)",
     "imagePath": "assets/images/Joke.png",
   },
   {
-    "name": " เนสกาแฟ เรดคัพ",
+    "name": "5.เนสกาแฟ เรดคัพ",
     "shelf": "C7",
     "total": "4",
     "quantity": 4,
-    "productCode": 0005,
+    "productCode": 1493,
     "size": "ขนาด: 100 กรัม",
     "packaging": "บรรจุ: 10 ขวด (1 ลัง)",
     "imagePath": "assets/images/Nescafe.png",
   },
   {
-    "name": " น้ำตาลทรายขาว",
+    "name": "6.น้ำตาลทรายขาว",
     "shelf": "S8",
     "total": "3",
     "quantity": 0,
-    "productCode": 0006,
+    "productCode": 1222,
     "size": "ขนาด: 1 กิโลกรัม",
     "packaging": "บรรจุ: 20 ถุง (1 ลัง)",
     "imagePath": "assets/images/Sugar.png",
   },
   {
-    "name": " น้ำมันถั่วเหลือง",
+    "name": "7.น้ำมันถั่วเหลือง",
     "shelf": "W1",
     "total": "3",
     "quantity": 3,
-    "productCode": 0007,
+    "productCode": 1010,
     "size": "ขนาด: 1 ลิตร",
     "packaging": "บรรจุ: 12 ขวด (1 ลัง)",
     "imagePath": "assets/images/SoybeanOil.png",
   },
   {
-    "name": " น้ำปลาทิพรส",
+    "name": "8.น้ำปลาทิพรส",
     "shelf": "W3",
     "total": "3",
     "quantity": 1,
-    "productCode": 0008,
+    "productCode": 1228,
     "size": "ขนาด: 700 มิลลิลิตร",
     "packaging": "บรรจุ: 12 ขวด (1 ลัง)",
     "imagePath": "assets/images/Tiparos.png",
   },
 ];
 
-Future<void> fetchDataFromApi() async {
-  try {
-    final response = await http.get(Uri.parse(
-        'http://teamproject.ddns.net/application/api/productlist.php?id=1'));
-
-    if (response.statusCode == 200) {
-      ///convert string to map
-      final Map<String, dynamic> mBody = json.decode(response.body);
-      debugPrint("response body: $mBody");
-    } else {
-      print('Failed to load data. Status code: ${response.statusCode}');
-    }
-  } catch (error) {
-    print('Error: $error');
-  }
-}
-
 class ProductListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    fetchDataFromApi();
     return Scaffold(
       backgroundColor: Colors.black,
       resizeToAvoidBottomInset: false,
@@ -125,7 +104,7 @@ class ProductListScreen extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) {
-                  return TravelDetailScreen(id: '1');
+                  return TravelDetailScreen(id: "1");
                 },
               ),
             );
@@ -190,11 +169,11 @@ class ProductListScreen extends StatelessWidget {
           children: [
             GridView.count(
               crossAxisCount: 2,
-              childAspectRatio: 0.51,
+              childAspectRatio: 0.48,
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
-              children: List.generate(Product.length, (index) {
-                var product = Product[index];
+              children: List.generate(ProductList.length, (index) {
+                var product = ProductList[index];
                 return Container(
                   padding:
                       EdgeInsets.only(left: 7, right: 7, top: 20, bottom: 1),
@@ -208,107 +187,115 @@ class ProductListScreen extends StatelessWidget {
                     ),
                   ),
                   width: double.infinity,
-                  child: Column(
+                  child: Stack(
                     children: [
-                      InkWell(
-                        onTap: () {},
-                        child: Padding(
-                          padding: EdgeInsets.all(0.5),
-                          child: Image.asset(
-                            product['imagePath'],
-                            height: 100,
-                            width: 100,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(bottom: 2),
-                        child: Container(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            product['name'].toString(),
-                            style: TextStyle(
-                              fontSize: 19,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "รหัสสินค้า: ${product['productCode'].toString()}",
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          product['shelf'].toString(),
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          product['packaging'].toString(),
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 2),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "ราคา: ${product['price'].toString()}",
-                              style: TextStyle(
-                                fontSize: 17,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                      Column(
+                        children: [
+                          InkWell(
+                            onTap: () {},
+                            child: Padding(
+                              padding: EdgeInsets.all(0.5),
+                              child: Image.asset(
+                                product['imagePath'],
+                                height: 100,
+                                width: 100,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding:
-                            const EdgeInsets.only(top: 10, right: 7, bottom: 3),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Container(
-                              width: 27,
-                              height: 27,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                border: Border.all(
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 2, top: 10),
+                            child: Container(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                product['name'],
+                                style: TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.bold,
                                   color: Colors.white,
-                                  width: 2,
                                 ),
                               ),
-                              child: (product['quantity'] ==
-                                      int.parse(product['total']))
-                                  ? Icon(
-                                      Icons.check_outlined,
-                                      color: Colors.green,
-                                      size: 25,
-                                    )
-                                  : SizedBox(),
                             ),
-                          ],
-                        ),
+                          ),
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "รหัสสินค้า: ${product['productCode']}",
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              product['size'],
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              product['packaging'],
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 2),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'จำนวน: ${product['total']} ลัง',
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.all(1),
+                                  decoration: BoxDecoration(
+                                    color: Color(0xff0A8ED9),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Container(
+                                    width: 35,
+                                    child: Center(
+                                      child: Text(
+                                        product['shelf'],
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Positioned for checkbox
+                      Positioned(
+                        bottom: 5,
+                        right: 1,
+                        child:
+                            (product['quantity'] == int.parse(product['total']))
+                                ? Image.asset(
+                                    "assets/images/checkk.png",
+                                    width: 50,
+                                    height: 50,
+                                  )
+                                : SizedBox(),
                       ),
                     ],
                   ),
@@ -342,5 +329,19 @@ class ProductListScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+Future<Map<String, dynamic>> fetchProductDetails(String productId) async {
+  final String apiUrl =
+      'http://teamproject.ddns.net/application/api/ProductList.php?id=$productId';
+
+  final response = await http.get(Uri.parse(apiUrl));
+
+  if (response.statusCode == 200) {
+    return json.decode(response.body);
+  } else {
+    throw Exception(
+        'Failed to load product details. Status Code: ${response.statusCode}');
   }
 }

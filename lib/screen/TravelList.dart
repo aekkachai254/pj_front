@@ -18,7 +18,7 @@ class _TravelListScreenState extends State<TravelListScreen> {
 
   Future<void> fetchData() async {
     try {
-      const apiUrl = '${baseUrl.apiUrl}/trip.php';
+      const apiUrl = '${baseUrl.deployApiUrl}/trip.php';
       final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
@@ -167,8 +167,8 @@ class _TravelListScreenState extends State<TravelListScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) =>
-                                          TravelDetailScreen(id: '${trip['id']}')),
+                                      builder: (context) => TravelDetailScreen(
+                                          id: '${trip['id']}')),
                                 );
                               },
                               child: const Center(

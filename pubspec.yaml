@@ -57,6 +57,10 @@ dependencies:
   flutter_osm_plugin: ^0.70.4
   vibration: ^1.8.4
   audioplayers: ^5.2.1
+  camera: ^0.10.5+9
+  external_path: ^1.0.3
+  gap: ^3.0.1
+  media_scanner: ^2.1.0
 
 
 

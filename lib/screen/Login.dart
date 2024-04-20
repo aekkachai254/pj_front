@@ -1,12 +1,12 @@
-import 'package:applicaiton/api_config.dart' as configURL;
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'Home.dart';
+import '../api_config.dart' as configURL;
 import 'Intro.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'Home.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -21,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   String? systemName;
+  bool _serverError = false;
 
   @override
   void initState() {
@@ -30,8 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _getSystemName() async {
     // Fetch data from intro.php
-    Uri url =
-        Uri.parse('${configURL.deployApiUrl}/intro.php');
+    Uri url = Uri.parse('${configURL.deployUrl}/intro.php');
 
     try {
       var response = await http.get(url);
@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _showAlert('มีปัญหาในการเชื่อมต่อกับเซิร์ฟเวอร์');
       }
     } catch (e) {
-      _showAlert('เกิดข้อผิดพลาด: $e');
+      _showAlert('ขาดการเชื่อมต่อกับเซิร์ฟเวอร์');
     }
   }
 
@@ -57,21 +57,14 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     // Your authentication logic here
-    Uri url =
-        Uri.parse('${configURL.deployApiUrl}/login.php');
+    Uri url = Uri.parse('${configURL.deployUrl}/login.php');
 
     try {
       var response = await http.post(
         url,
-        headers: <String, String>{
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': 'Bearer API@Application1234!',
-        },
         body: {
-          // 'username': phoneNumber,
-          // 'password': password,
-          'username': '0640986563',
-          'password': '25042544',
+          'username': phoneNumber,
+          'password': password,
         },
       );
 
@@ -79,17 +72,21 @@ class _LoginScreenState extends State<LoginScreen> {
         Map<String, dynamic> data = json.decode(response.body);
 
         if (data.containsKey('error')) {
-          _showAlert(data['error']);
+          _showUnSuccessAlert(data['error']);
         } else {
           if (data.containsKey('message')) {
             _showSuccessAlert(data['message']);
+            if (data.containsKey('status_use') && data['status_use'] == 1) {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('isLoggedIn', true);
+            }
           }
         }
       } else {
         _showAlert('มีปัญหาในการเชื่อมต่อกับเซิร์ฟเวอร์');
       }
     } catch (e) {
-      _showAlert('เกิดข้อผิดพลาด: $e');
+      _showAlert('ขาดการเชื่อมต่อกับเซิร์ฟเวอร์');
     } finally {
       setState(() {
         _isLoading = false;
@@ -129,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  void _showAlert(String message) {
+  void _showUnSuccessAlert(String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -139,19 +136,40 @@ class _LoginScreenState extends State<LoginScreen> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('ตกลง'),
+            child: Text('ลองอีกครั้ง'),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _logout(BuildContext context) async {
-    // Your logout logic here
-    // For example:
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('username');
-    Navigator.of(context).popUntil((route) => route.isFirst);
+  void _showAlert(String message) {
+    if (!_serverError) {
+      setState(() {
+        _serverError = true;
+      });
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('แจ้งเตือนระบบ'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => IntroScreen(),
+                  ),
+                );
+              },
+              child: Text('เข้าใจแล้ว'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Widget buildPhoneNumber() {
@@ -296,74 +314,73 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (systemName == null)
-                const CircularProgressIndicator()
+                Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(vertical: 60.0),
+                  child: const CircularProgressIndicator(),
+                )
               else
-                Text(
-                  systemName!,
-                  style: const TextStyle(
-                    fontFamily: 'Pacifico',
-                    color: Colors.white,
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              const SizedBox(height: 60.0),
-              buildPhoneNumber(),
-              const SizedBox(height: 10.0),
-              buildPassword(),
-              const SizedBox(height: 30.0),
-              InkWell(
-                onTap: _isLoading
-                    ? null
-                    : () async {
-                        String phoneNumber = _phoneNumberController.text;
-                        String password = _passwordController.text;
-
-                        await _authenticateUser(phoneNumber, password);
-                      },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(),
-                  child: Container(
-                    width: 250.0,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFA0DAFB), Color(0xFF0A8ED9)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                Column(
+                  children: [
+                    Text(
+                      systemName!,
+                      style: const TextStyle(
+                        fontFamily: 'Pacifico',
+                        color: Colors.white,
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
                       ),
-                      borderRadius: BorderRadius.circular(20),
                     ),
-                    padding: const EdgeInsets.all(16.0),
-                    child: Center(
-                      child: _isLoading
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                CircularProgressIndicator(
+                    const SizedBox(height: 60.0),
+                    buildPhoneNumber(),
+                    const SizedBox(height: 10.0),
+                    buildPassword(),
+                    const SizedBox(height: 30.0),
+                    InkWell(
+                      onTap: _isLoading
+                          ? null
+                          : () async {
+                              String phoneNumber = _phoneNumberController.text;
+                              String password = _passwordController.text;
+                              await _authenticateUser(phoneNumber, password);
+                            },
+                      child: Container(
+                        width: 240,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFA0DAFB), Color(0xFF0A8ED9)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.all(16.0),
+                        child: Center(
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                       Colors.white),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(Icons.login,
+                                        color: Colors.white, size: 20),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      'เข้าสู่ระบบ',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20.0,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Icon(Icons.login,
-                                    color: Colors.white, size: 20),
-                                SizedBox(width: 10),
-                                Text(
-                                  'เข้าสู่ระบบ',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20.0,
-                                  ),
-                                ),
-                              ],
-                            ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ),
             ],
           ),
         ),

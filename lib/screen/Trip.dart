@@ -1,43 +1,26 @@
 import 'dart:convert';
 
-import 'package:applicaiton/api_config.dart' as baseUrl;
-import 'package:applicaiton/screen/Home.dart';
-import 'package:applicaiton/screen/TravelDetail.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-class TravelListScreen extends StatefulWidget {
-  const TravelListScreen({super.key});
+import '../api_config.dart' as configURL;
+import 'Home.dart';
+import 'Intro.dart';
+import 'TripDetail.dart';
+
+class TripScreen extends StatefulWidget {
+  final String username;
+
+  const TripScreen({Key? key, required this.username, required String trip_id})
+      : super(key: key);
 
   @override
-  State<TravelListScreen> createState() => _TravelListScreenState();
+  State<TripScreen> createState() => _TripScreenState();
 }
 
-class _TravelListScreenState extends State<TravelListScreen> {
+class _TripScreenState extends State<TripScreen> {
   List<Map<String, dynamic>> trips = [];
-
-  Future<void> fetchData() async {
-    try {
-      const apiUrl = '${baseUrl.deployApiUrl}/trip.php';
-      final response = await http.get(Uri.parse(apiUrl));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-
-        print('Received data from API: $data');
-
-        setState(() {
-          trips = List<Map<String, dynamic>>.from(data['ms_trip']);
-        });
-      } else {
-        print('Error: ${response.statusCode}');
-        print('API Response Body: ${response.body}');
-        // Handle errors - you can display a SnackBar or AlertDialog here
-      }
-    } catch (error) {
-      print('Error: $error');
-    }
-  }
+  bool _serverError = false;
 
   @override
   void initState() {
@@ -45,49 +28,100 @@ class _TravelListScreenState extends State<TravelListScreen> {
     fetchData();
   }
 
+  Future<void> fetchData() async {
+    try {
+      final apiUrl =
+          '${configURL.deployUrl}/trip.php?username=${widget.username}';
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is List) {
+          setState(() {
+            trips = List<Map<String, dynamic>>.from(data);
+          });
+        } else {
+          _showAlert('ไม่พบข้อมูลรายการเดินทาง');
+        }
+      } else {
+        _showAlert('มีปัญหาในการเชื่อมต่อกับเซิร์ฟเวอร์');
+      }
+    } catch (e) {
+      _showAlert('ขาดการเชื่อมต่อกับเซิร์ฟเวอร์');
+    }
+  }
+
+  void _showAlert(String message) {
+    if (!_serverError) {
+      setState(() {
+        _serverError = true;
+      });
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('แจ้งเตือนระบบ'),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // ปิด AlertDialog เดิม
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          IntroScreen(), // แก้เป็นหน้าที่ต้องการเปิด
+                    ),
+                  );
+                },
+                child: Text("เข้าใจแล้ว"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: constraints.maxHeight,
+    if (!_serverError) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          leading: BackButton(
+            color: Colors.white,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HomeScreen(),
+                ),
+              );
+            },
+          ),
+          title: const Text(
+            "รายการการเดินทาง",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Colors.white,
             ),
-            child: Scaffold(
-              backgroundColor: Colors.black,
-              appBar: AppBar(
-                backgroundColor: Colors.black,
-                leading: BackButton(
-                  color: Colors.white,
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return const HomeScreen();
-                        },
-                      ),
-                    );
-                  },
-                ),
-                title: const Text(
-                  "รายการการเดินทาง",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Colors.white,
-                  ),
-                ),
-                centerTitle: true,
-              ),
-              body: ListView.builder(
+          ),
+          centerTitle: true,
+        ),
+        body: trips.isEmpty
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : ListView.builder(
                 itemCount: trips.length,
                 itemBuilder: (context, index) {
                   final trip = trips[index];
                   return Card(
                     elevation: 2,
-                    margin: const EdgeInsets.all(20),
+                    margin: EdgeInsets.only(left: 20, right: 20, top: 10),
                     color: const Color.fromRGBO(0, 14, 19, 26),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -103,7 +137,8 @@ class _TravelListScreenState extends State<TravelListScreen> {
                         Flexible(
                           child: Padding(
                             padding: const EdgeInsets.only(
-                              left: 7,
+                              left: 10,
+                              right: 10,
                               top: 15,
                               bottom: 15,
                             ),
@@ -119,14 +154,13 @@ class _TravelListScreenState extends State<TravelListScreen> {
                                         Row(
                                           children: [
                                             const Image(
-                                              image: AssetImage(
-                                                "assets/images/arrow-point-to-down.png",
+                                              image: NetworkImage(
+                                                "${configURL.imageUrl}/pin_marker.png",
                                               ),
-                                              color: Colors.white,
                                               width: 20,
                                               fit: BoxFit.contain,
                                             ),
-                                            const SizedBox(width: 10),
+                                            SizedBox(width: 10),
                                             Text(
                                               trip['name'].toString(),
                                               style: const TextStyle(
@@ -138,7 +172,7 @@ class _TravelListScreenState extends State<TravelListScreen> {
                                           ],
                                         ),
                                         Text(
-                                          'วันที่: ${trip['date'].toString()}',
+                                          'วันที่ ${trip['date'].toString()}',
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 15,
@@ -153,7 +187,8 @@ class _TravelListScreenState extends State<TravelListScreen> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(right: 13, bottom: 20),
+                          padding: const EdgeInsets.only(
+                              top: 20, left: 15, right: 15, bottom: 20),
                           child: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: const BoxDecoration(
@@ -167,8 +202,11 @@ class _TravelListScreenState extends State<TravelListScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => TravelDetailScreen(
-                                          id: '${trip['id']}')),
+                                      builder: (context) => TripDetailScreen(
+                                            trip_id: trip['id'],
+                                            username: widget
+                                                .username, // ส่งค่า username ไปยังหน้า TripDetailScreen
+                                          )),
                                 );
                               },
                               child: const Center(
@@ -189,10 +227,9 @@ class _TravelListScreenState extends State<TravelListScreen> {
                   );
                 },
               ),
-            ),
-          ),
-        );
-      },
-    );
+      );
+    } else {
+      return Scaffold(); // แสดง Scaffold ว่างๆ เมื่อเกิดข้อผิดพลาดจากเซิร์ฟเวอร์
+    }
   }
 }

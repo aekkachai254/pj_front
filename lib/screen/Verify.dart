@@ -1,7 +1,5 @@
-import 'package:applicaiton/screen/ProductDetail.dart';
-import 'package:applicaiton/screen/PurchaseOrder.dart';
+import 'package:applicaiton/screen/CheckproductDetail.dart';
 import 'package:applicaiton/screen/Scan.dart';
-import 'package:applicaiton/screen/TravelDetail.dart';
 import 'package:flutter/material.dart';
 
 class VerifyScreen extends StatelessWidget {
@@ -23,30 +21,34 @@ class VerifyScreen extends StatelessWidget {
       leading: BackButton(
         color: Colors.white,
         onPressed: () {
-          Navigator.push(
+          /*Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) {
-                return const TravelDetailScreen(id: '1');
+                return const TripDetailScreen(
+                  username: widget.username,
+                  purchaseorderId: Widget.purchaseorderId,
+                  trip_id: '',
+                );
               },
             ),
-          );
+          );*/
         },
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.file_present_outlined, color: Colors.white),
-          onPressed: () {
+        // IconButton(
+        //  icon: const Icon(Icons.file_present_outlined, color: Colors.white),
+        /* onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const PurchaseOrder()),
             );
-          },
-          iconSize: 30,
-        ),
-        const SizedBox(
-          width: 2,
-        ),
+         */ // },
+        // iconSize: 30,
+        // ),
+        //const SizedBox(
+        // width: 2,
+        // ),
         IconButton(
           icon: const Icon(Icons.crop_free_sharp, color: Colors.white),
           onPressed: () {
@@ -115,6 +117,8 @@ class VerifyScreen extends StatelessWidget {
         builder: (context) => ProductDetailScreen(
           ProductDetail: ProductList[index],
           productDetail: {},
+          product: {},
+          closeScreen: () {},
         ),
       ),
     );
